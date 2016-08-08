@@ -1,5 +1,7 @@
 package cards.example.com.cardsampleapp.cardLayout;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Color;
@@ -9,6 +11,7 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.animation.LinearInterpolator;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -36,15 +39,36 @@ public class CardLayout extends LinearLayout {
     private final int size5Dp = dpToPx(5);
 
     private int moveX,moveImage1X,moveImage2X,moveBadgeX;
-    private int MIN_DISTANCE = 0, moveDelta=0, currentCard=0, totalCards=0;
+    private int MIN_DISTANCE = 0, cardWidth, moveDelta=0, currentCard=0, totalCards=0;
     private CardModel currentCardModel;
     private ArrayList<CardModel> cardCollection = new ArrayList<CardModel>();
     private LinearLayout linearLayout;
     private ImageView nextCardimageView, deleteCardimageView, contentCardImageView;
     private TextView textView, quantityTextView;
     private LinearLayout.LayoutParams cardViewLayoutParam = new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT,size100Dp);
-    ICardLayout iCardLayout = null;
+    private ICardLayout iCardLayout = null;
+    private AnimatorListenerAdapter cardViewSwipeRightAnimatorListenerAdapter = new AnimatorListenerAdapter() {
+        @Override
+        public void onAnimationEnd(Animator animation) {
+            super.onAnimationEnd(animation);
+            linearLayout.setVisibility(View.GONE);
+            nextCardData();
+            if (iCardLayout!=null) {
+                iCardLayout.swipeRight(currentCardModel);
+            }
+        }
+    };
 
+    AnimatorListenerAdapter cardViewSwipeLeftAnimatorListenerAdapter = new AnimatorListenerAdapter() {
+        @Override
+        public void onAnimationEnd(Animator animation) {
+            super.onAnimationEnd(animation);
+            removeCard(currentCardModel);
+            if (iCardLayout!=null) {
+                iCardLayout.swipeLeft(currentCardModel);
+            }
+        }
+    };
 
     public void setContractor(ICardLayout iCardLayout) {
         this.iCardLayout = iCardLayout;
@@ -151,13 +175,6 @@ public class CardLayout extends LinearLayout {
             } else {
                 setVisibility(View.GONE);
             }
-
-
-
-            if (iCardLayout!=null) {
-                iCardLayout.swipeLeft(card);
-            }
-
             nextCardData();
         }
 
@@ -210,6 +227,8 @@ public class CardLayout extends LinearLayout {
      * @param context
      */
     private void initCardLayout(Context context) {
+
+        cardWidth = getWidth();
 
         cardViewLayoutParam.setMargins(size10Dp,size10Dp,size10Dp,size10Dp);
         setGravity(Gravity.CENTER_VERTICAL);
@@ -298,33 +317,12 @@ public class CardLayout extends LinearLayout {
 
 
     @Override
-    public boolean callOnClick() {
-
-        Toast.makeText(getContext(), "CLICOU", Toast.LENGTH_SHORT).show();
-        return true;
-    }
-
-    @Override
-    public boolean performClick() {
-        Toast.makeText(getContext(), "CLICOU", Toast.LENGTH_SHORT).show();
-        return true;
-    }
-
-    @Override
-    public void setOnClickListener(OnClickListener l) {
-        super.setOnClickListener(l);
-
-
-    }
-
-    @Override
     public boolean onTouchEvent(MotionEvent event) {
 
         Log.v("CardLayout","onTouchEvent");
         Log.v("CardLayout","onTouchEvent - MIN_DISTANCE : " + MIN_DISTANCE);
         final int posX = (int) event.getRawX();
-
-        MIN_DISTANCE = linearLayout.getWidth()/2;
+        MIN_DISTANCE = cardWidth/2;
 
         LinearLayout.LayoutParams ContentLayoutParams, nextImageLayoutParams, deleteImageParams,badgeLayoutParams,
         calculatedContentLayoutParams,calculatedNextImageLayoutParams,calculatedDeleteImageParams, calculatedBadgeLayoutParam;
@@ -367,7 +365,7 @@ public class CardLayout extends LinearLayout {
                 linearLayout.setLayoutParams(ContentLayoutParams);
 
                 nextImageLayoutParams.leftMargin = deltaImage1;
-                nextImageLayoutParams.rightMargin = -deltaImage1-size50Dp;
+                nextImageLayoutParams.rightMargin = -deltaImage1;
                 nextCardimageView.setLayoutParams(nextImageLayoutParams);
 
                 deleteImageParams.leftMargin = deltaImage2;
@@ -384,22 +382,34 @@ public class CardLayout extends LinearLayout {
                 Log.v("CardLayout","onTouchEvent - ACTION_UP -  delta : " + moveDelta);
                 if (moveDelta > 0 && moveDelta > MIN_DISTANCE) {
                     // LEFT to RIGHT
-                    linearLayout.animate().translationX(getWidth() + 10);
-                    nextCardimageView.animate().translationX(getWidth() + 10);
-                    deleteCardimageView.animate().translationX(getWidth() + 10);
-                    quantityTextView.animate().translationX(getWidth() + 10);
-                    nextCardData();
-                    if (iCardLayout!=null) {
-                        iCardLayout.swipeRight(currentCardModel);
-                    }
+                    linearLayout.animate().translationX(cardWidth).setInterpolator(new LinearInterpolator()).setListener(cardViewSwipeRightAnimatorListenerAdapter);
+                    nextCardimageView.animate().translationX(cardWidth).setInterpolator(new LinearInterpolator()).setListener(cardViewSwipeRightAnimatorListenerAdapter);
+                    deleteCardimageView.animate().translationX(cardWidth).setInterpolator(new LinearInterpolator()).setListener(cardViewSwipeRightAnimatorListenerAdapter);
+                    quantityTextView.animate().translationX(cardWidth).setInterpolator(new LinearInterpolator()).setListener(cardViewSwipeRightAnimatorListenerAdapter);
+
+                    setLayoutParams(cardViewLayoutParam);
+
+                    invalidate();
+                    linearLayout.invalidate();
+                    nextCardimageView.invalidate();
+                    deleteCardimageView.invalidate();
+                    quantityTextView.invalidate();
+
                 } else if (-moveDelta > MIN_DISTANCE) {
                     // RIGHT to LEFT
-                    linearLayout.animate().translationX(-getWidth() - 10);
-                    nextCardimageView.animate().translationX(-getWidth() - 10);
-                    deleteCardimageView.animate().translationX(-getWidth() - 10);
-                    quantityTextView.animate().translationX(-getWidth() - 10);
+                    linearLayout.animate().translationX(-cardWidth).setInterpolator(new LinearInterpolator()).setListener(cardViewSwipeLeftAnimatorListenerAdapter);
+                    nextCardimageView.animate().translationX(-cardWidth).setInterpolator(new LinearInterpolator()).setListener(cardViewSwipeLeftAnimatorListenerAdapter);
+                    deleteCardimageView.animate().translationX(-cardWidth).setInterpolator(new LinearInterpolator()).setListener(cardViewSwipeLeftAnimatorListenerAdapter);
+                    quantityTextView.animate().translationX(-cardWidth).setInterpolator(new LinearInterpolator()).setListener(cardViewSwipeLeftAnimatorListenerAdapter);
 
-                    removeCard(currentCardModel);
+                    setLayoutParams(cardViewLayoutParam);
+
+                    invalidate();
+                    linearLayout.invalidate();
+                    nextCardimageView.invalidate();
+                    deleteCardimageView.invalidate();
+                    quantityTextView.invalidate();
+
                 } else if (moveDelta > 10 || moveDelta < -10) {
                     moveDelta = -moveDelta;
                     linearLayout.animate().translationX(moveDelta);
@@ -416,12 +426,7 @@ public class CardLayout extends LinearLayout {
                 moveDelta = 0;
                 break;
         }
-        setLayoutParams(cardViewLayoutParam);
-        invalidate();
-        linearLayout.invalidate();
-        nextCardimageView.invalidate();
-        deleteCardimageView.invalidate();
-        quantityTextView.invalidate();
+
         return true;
     }
 
