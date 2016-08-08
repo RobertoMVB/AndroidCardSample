@@ -47,10 +47,12 @@ public class CardLayout extends LinearLayout {
     private TextView textView, quantityTextView;
     private LinearLayout.LayoutParams cardViewLayoutParam = new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT,size100Dp);
     private ICardLayout iCardLayout = null;
+
     private AnimatorListenerAdapter cardViewSwipeRightAnimatorListenerAdapter = new AnimatorListenerAdapter() {
         @Override
         public void onAnimationEnd(Animator animation) {
             super.onAnimationEnd(animation);
+            Log.v("CardLayout","cardViewSwipeRightAnimatorListenerAdapter");
             linearLayout.setVisibility(View.GONE);
             nextCardData();
             if (iCardLayout!=null) {
@@ -63,6 +65,7 @@ public class CardLayout extends LinearLayout {
         @Override
         public void onAnimationEnd(Animator animation) {
             super.onAnimationEnd(animation);
+            Log.v("CardLayout","cardViewSwipeLeftAnimatorListenerAdapter");
             removeCard(currentCardModel);
             if (iCardLayout!=null) {
                 iCardLayout.swipeLeft(currentCardModel);
@@ -110,7 +113,12 @@ public class CardLayout extends LinearLayout {
             }
 
             totalCards = this.cardCollection.size();
-            quantityTextView.setText((String.valueOf(totalCards)));
+
+            if (totalCards > 0) {
+                currentCardModel = this.cardCollection.get(0);
+                quantityTextView.setText((String.valueOf(totalCards)));
+            }
+            nextCardData();
         }
 
         return addSuccess;
@@ -137,6 +145,7 @@ public class CardLayout extends LinearLayout {
             }
 
             totalCards = this.cardCollection.size();
+
             if (totalCards > 0) {
                 currentCardModel = this.cardCollection.get(0);
                 quantityTextView.setText((String.valueOf(totalCards)));
@@ -152,8 +161,9 @@ public class CardLayout extends LinearLayout {
      *
      * @param cards
      */
-    public void replaceCards (ArrayList<CardModel> cards) {
-        this.cardCollection = cards;
+    public boolean replaceCards (ArrayList<CardModel> cards) {
+        this.cardCollection.clear();
+        return addCards(cards);
     }
 
     /**
@@ -183,16 +193,28 @@ public class CardLayout extends LinearLayout {
 
     /**
      *
-      */
-    private void nextCardData() {
+     */
+    private void clearCardView () {
+
+        setVisibility(View.GONE);
+
         removeAllViews();
-        setVisibility(View.INVISIBLE);
+
         animate().scaleY(0);
         animate().scaleX(0);
+    }
+
+    /**
+     *
+      */
+    private void nextCardData() {
+
+        clearCardView();
 
         initCardLayout(getContext());
 
         currentCard++;
+
         if (currentCard >= totalCards) {
             currentCard = 0;
         }
@@ -203,6 +225,7 @@ public class CardLayout extends LinearLayout {
             textView.setText(currentCardModel.getCardText());
             contentCardImageView.setImageResource(currentCardModel.getImageResourceId());
             quantityTextView.setText((String.valueOf(totalCards)));
+
             setVisibility(View.VISIBLE);
             animate().scaleY(1);
             animate().scaleX(1);
@@ -285,6 +308,7 @@ public class CardLayout extends LinearLayout {
         addView(cardViewBadgeTextView);
         addView(cardViewDeleteImageView);
 
+        cardWidth = getWidth();
 
         nextCardimageView = cardViewNextImageView;
         linearLayout = cardViewLinearLayout;
@@ -327,7 +351,6 @@ public class CardLayout extends LinearLayout {
         LinearLayout.LayoutParams ContentLayoutParams, nextImageLayoutParams, deleteImageParams,badgeLayoutParams,
         calculatedContentLayoutParams,calculatedNextImageLayoutParams,calculatedDeleteImageParams, calculatedBadgeLayoutParam;
 
-
         switch (event.getAction() & MotionEvent.ACTION_MASK) {
             case MotionEvent.ACTION_DOWN:
 
@@ -359,13 +382,16 @@ public class CardLayout extends LinearLayout {
                 deleteImageParams = (LinearLayout.LayoutParams) deleteCardimageView.getLayoutParams();
                 badgeLayoutParams = (LinearLayout.LayoutParams) quantityTextView.getLayoutParams();
 
-                ContentLayoutParams.width = LayoutParams.MATCH_PARENT;
                 ContentLayoutParams.leftMargin = moveDelta;
                 ContentLayoutParams.rightMargin = -moveDelta;
                 linearLayout.setLayoutParams(ContentLayoutParams);
 
                 nextImageLayoutParams.leftMargin = deltaImage1;
                 nextImageLayoutParams.rightMargin = -deltaImage1;
+
+                Log.v("CardLayout","onTouchEvent - ACTION_MOVE -  nextImageLayoutParams leftMargin : " + nextImageLayoutParams.leftMargin);
+                Log.v("CardLayout","onTouchEvent - ACTION_MOVE -  nextImageLayoutParams rightMargin: " + nextImageLayoutParams.rightMargin);
+
                 nextCardimageView.setLayoutParams(nextImageLayoutParams);
 
                 deleteImageParams.leftMargin = deltaImage2;
@@ -383,32 +409,16 @@ public class CardLayout extends LinearLayout {
                 if (moveDelta > 0 && moveDelta > MIN_DISTANCE) {
                     // LEFT to RIGHT
                     linearLayout.animate().translationX(cardWidth).setInterpolator(new LinearInterpolator()).setListener(cardViewSwipeRightAnimatorListenerAdapter);
-                    nextCardimageView.animate().translationX(cardWidth).setInterpolator(new LinearInterpolator()).setListener(cardViewSwipeRightAnimatorListenerAdapter);
-                    deleteCardimageView.animate().translationX(cardWidth).setInterpolator(new LinearInterpolator()).setListener(cardViewSwipeRightAnimatorListenerAdapter);
-                    quantityTextView.animate().translationX(cardWidth).setInterpolator(new LinearInterpolator()).setListener(cardViewSwipeRightAnimatorListenerAdapter);
-
-                    setLayoutParams(cardViewLayoutParam);
-
-                    invalidate();
-                    linearLayout.invalidate();
-                    nextCardimageView.invalidate();
-                    deleteCardimageView.invalidate();
-                    quantityTextView.invalidate();
+                    nextCardimageView.animate().translationX(cardWidth);
+                    deleteCardimageView.animate().translationX(cardWidth);
+                    quantityTextView.animate().translationX(cardWidth);
 
                 } else if (-moveDelta > MIN_DISTANCE) {
                     // RIGHT to LEFT
                     linearLayout.animate().translationX(-cardWidth).setInterpolator(new LinearInterpolator()).setListener(cardViewSwipeLeftAnimatorListenerAdapter);
-                    nextCardimageView.animate().translationX(-cardWidth).setInterpolator(new LinearInterpolator()).setListener(cardViewSwipeLeftAnimatorListenerAdapter);
-                    deleteCardimageView.animate().translationX(-cardWidth).setInterpolator(new LinearInterpolator()).setListener(cardViewSwipeLeftAnimatorListenerAdapter);
-                    quantityTextView.animate().translationX(-cardWidth).setInterpolator(new LinearInterpolator()).setListener(cardViewSwipeLeftAnimatorListenerAdapter);
-
-                    setLayoutParams(cardViewLayoutParam);
-
-                    invalidate();
-                    linearLayout.invalidate();
-                    nextCardimageView.invalidate();
-                    deleteCardimageView.invalidate();
-                    quantityTextView.invalidate();
+                    nextCardimageView.animate().translationX(-cardWidth);
+                    deleteCardimageView.animate().translationX(-cardWidth);
+                    quantityTextView.animate().translationX(-cardWidth);
 
                 } else if (moveDelta > 10 || moveDelta < -10) {
                     moveDelta = -moveDelta;
@@ -426,7 +436,13 @@ public class CardLayout extends LinearLayout {
                 moveDelta = 0;
                 break;
         }
+        setLayoutParams(cardViewLayoutParam);
 
+        invalidate();
+        linearLayout.invalidate();
+        nextCardimageView.invalidate();
+        deleteCardimageView.invalidate();
+        quantityTextView.invalidate();
         return true;
     }
 
