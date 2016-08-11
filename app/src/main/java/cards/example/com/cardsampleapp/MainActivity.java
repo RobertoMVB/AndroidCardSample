@@ -64,7 +64,7 @@ public class MainActivity extends Activity implements OnClickListener {
 
         switch (view.getId()) {
             case R.id.addCard:
-                cardCount++;
+
                 CardModel cardSample = new CardModel();
                 cardSample.setCardType(cardCount);
                 cardSample.setCardURL("http://");
@@ -83,13 +83,14 @@ public class MainActivity extends Activity implements OnClickListener {
                 }
 
                 myCardLayout.addCard(cardSample);
+                cardCount++;
                 break;
             case R.id.removeCard:
 
                 ArrayList<CardModel> cards =  new ArrayList<CardModel>();
 
                 for (int i = 0 ; i < 3 ; i ++) {
-                    cardCount++;
+
                     CardModel card = new CardModel();
                     card.setCardType(cardCount);
                     card.setCardURL("http://");
@@ -107,6 +108,7 @@ public class MainActivity extends Activity implements OnClickListener {
                         card.setImageResourceId(R.drawable.icon_action_alert3);
                     }
                     cards.add(card);
+                    cardCount++;
                 }
 
                 myCardLayout.addCards(cards);
