@@ -50,10 +50,10 @@ public class MainActivity extends Activity implements OnClickListener {
         });
 
         Button addCardButton = (Button) findViewById(R.id.addCard);
-        Button removeCardButton = (Button) findViewById(R.id.removeCard);
+        Button addCarListdButton = (Button) findViewById(R.id.removeCard);
 
         addCardButton.setOnClickListener(this);
-        removeCardButton.setOnClickListener(this);
+        addCarListdButton.setOnClickListener(this);
 
         //myCardLayout.SetListeners(myClickListener,myTouchEvent);
 
@@ -85,7 +85,31 @@ public class MainActivity extends Activity implements OnClickListener {
                 myCardLayout.addCard(cardSample);
                 break;
             case R.id.removeCard:
-                //myCardLayout.removeCard(cardSample);
+
+                ArrayList<CardModel> cards =  new ArrayList<CardModel>();
+
+                for (int i = 0 ; i < 3 ; i ++) {
+                    cardCount++;
+                    CardModel card = new CardModel();
+                    card.setCardType(cardCount);
+                    card.setCardURL("http://");
+
+                    // sample to add random image
+                    int randomN = (int) (Math.random() * (100 - 0)) + 0;
+
+                    card.setCardText("Este é o meu cartão : " + cardCount + " com o id aleatório : " + randomN);
+
+                    if (randomN > 66) {
+                        card.setImageResourceId(R.drawable.icon_action_alert1);
+                    } else if (randomN > 33) {
+                        card.setImageResourceId(R.drawable.icon_action_alert2);
+                    } else {
+                        card.setImageResourceId(R.drawable.icon_action_alert3);
+                    }
+                    cards.add(card);
+                }
+
+                myCardLayout.addCards(cards);
                 break;
         }
     }
