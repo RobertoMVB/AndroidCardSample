@@ -12,8 +12,7 @@
     <cards.example.com.cardsampleapp.cardLayout.CardLayout
         android:id="@+id/cardLayout"
         android:layout_width="match_parent"
-        android:layout_height="100dp"/>
-
+        android:layout_height="wrap_content"/>
 
     <Button
         android:id="@+id/addCard"
@@ -27,5 +26,5 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAlignment="center"
-        android:text="Remover cartão"/>
+        android:text="Adicionar 3 cartões"/>
 </LinearLayout>
