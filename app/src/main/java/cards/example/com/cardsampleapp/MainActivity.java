@@ -74,6 +74,10 @@ public class MainActivity extends Activity implements OnClickListener {
 
                 card.setCardType(cardCount);
                 card.setCardURL("http://");
+                card.setCardNextText("Próximo");
+                card.setCardDeleteText("Fechar");
+                card.setImageNextId(R.drawable.icon_action_next);
+                card.setImageDeleteId(R.drawable.icon_action_delete);
 
                 // sample to add random image
                 int randomNumber = (int) (Math.random() * (100 - 0)) + 0;
@@ -102,7 +106,10 @@ public class MainActivity extends Activity implements OnClickListener {
 
                     // sample to add random image
                     int randomN = (int) (Math.random() * (100 - 0)) + 0;
-
+                    card.setCardNextText("Próximo");
+                    card.setCardDeleteText("Fechar");
+                    card.setImageNextId(R.drawable.icon_action_next);
+                    card.setImageDeleteId(R.drawable.icon_action_delete);
                     card.setCardText("Este é o meu cartão : " + cardCount + " com o id aleatório : " + randomN);
 
                     if (randomN > 66) {
@@ -122,7 +129,10 @@ public class MainActivity extends Activity implements OnClickListener {
                 for (int i = 0 ; i < 6 ; i ++) {
 
                     card = new CardModel();
-
+                    card.setCardNextText("Próximo");
+                    card.setCardDeleteText("Fechar");
+                    card.setImageNextId(R.drawable.icon_action_next);
+                    card.setImageDeleteId(R.drawable.icon_action_delete);
                     card.setCardType(cardCount);
                     card.setCardURL("http://");
 

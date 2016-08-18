@@ -45,6 +45,7 @@ public class CardLayout extends LinearLayout {
 
     private int moveX,moveBadgeX, moveNextImageView, moveDeleteImageView;
     private int MIN_DISTANCE = 0, cardWidth, moveDelta=0, currentCard=0, totalCards=0, currentCardId =0,numberOfDisplayedCards = -1;
+    private float initialPositionXNextLayout,initialPositionXDeleteLayout,initialPositionXContentLayout,initialPositionXBadgeLayout;
     private CardModel currentCardModel;
     private ArrayList<CardModel> cardCollection = new ArrayList<CardModel>();
     private LinearLayout currentCardLinearLayout;
@@ -172,7 +173,7 @@ public class CardLayout extends LinearLayout {
             if (currentCard < 0 ) {
                 currentCard = totalCards-1;
             }
-            resetBadgePosition();
+            resetIcons();
             // Check if the cards were added
             if (currentCardLinearLayout == null) {
                 initCardLayout(getContext());
@@ -276,7 +277,7 @@ public class CardLayout extends LinearLayout {
                 }
                 nextCardView.setLayoutParams(nextCardLayoutParams);
 
-                LinearLayout contentCardView = (LinearLayout) nextCardView.getChildAt(1);
+                LinearLayout contentCardView = (LinearLayout) nextCardView.getChildAt(0);
 
                 float scaleValue = 1f - ((cardsToShow-1-i)/50f);
 
@@ -289,20 +290,96 @@ public class CardLayout extends LinearLayout {
             }
 
             currentCardModel = this.cardCollection.get(currentCard);
-            resetBadgePosition();
+            resetIcons();
         }
 
 
     }
 
-    private void resetBadgePosition () {
+    private void resetIcons() {
 
-        LayoutParams cardViewBadgeLayoutParam = new LayoutParams(size25Dp,size25Dp);
-        cardViewBadgeLayoutParam.setMargins(-size50Dp-size25Dp,-size35Dp,0,0);
-        quantityTextView.setText(String.valueOf(totalCards));
-        quantityTextView.setLayoutParams(cardViewBadgeLayoutParam);
-        quantityTextView.invalidate();
-        invalidate();
+        if (quantityTextView != null) {
+            LinearLayout nextImageView = (LinearLayout) getChildAt(1);
+            LinearLayout deleteImageView = (LinearLayout) getChildAt(2);
+            removeView(nextImageView);
+            removeView(deleteImageView);
+            removeView(quantityTextView);
+        }
+
+        if (totalCards > 0 ) {
+            CardModel currentCardModel = cardCollection.get(currentCard);
+
+            // Image view that appears in swipe right
+            ImageView cardViewNextImageView = new ImageView(currentContext);
+            cardViewNextImageView.setImageResource(currentCardModel.getImageNextId());
+            LayoutParams cardViewNextLayoutParam = new LayoutParams(size50Dp,size50Dp);
+            cardViewNextImageView.setLayoutParams(cardViewNextLayoutParam);
+
+            // Text view that appears in the swipe right
+            TextView cardViewNextTextView = new TextView(currentContext);
+            cardViewNextTextView.setMaxLines(1);
+            cardViewNextTextView.setText(currentCardModel.getCardNextText());
+            LayoutParams cardViewNextTextViewLayoutParams = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            cardViewNextTextView.setLayoutParams(cardViewNextTextViewLayoutParams);
+
+            // Linear layout that appears in the swipe right
+            LinearLayout cardViewNextLinearLayout = new LinearLayout(currentContext);
+            cardViewNextLinearLayout.setGravity(Gravity.CENTER);
+            LayoutParams cardViewNextLinearLayoutParams = new LayoutParams(size50Dp, ViewGroup.LayoutParams.WRAP_CONTENT);
+            cardViewNextLinearLayoutParams.setMargins(-size50Dp-cardWidth,size10Dp,0,size10Dp);
+            cardViewNextLinearLayout.setLayoutParams(cardViewNextLinearLayoutParams);
+            cardViewNextLinearLayout.addView(cardViewNextImageView);
+            cardViewNextLinearLayout.addView(cardViewNextTextView);
+
+            ImageView cardViewDeleteImageView = new ImageView(currentContext);
+            LayoutParams cardViewDeleteLayoutParams = new LayoutParams(size50Dp,size50Dp);
+            cardViewDeleteLayoutParams.setMargins(0,size10Dp,0,size10Dp);
+            cardViewDeleteImageView.setLayoutParams(cardViewDeleteLayoutParams);
+            cardViewDeleteImageView.setImageResource(currentCardModel.getImageDeleteId());
+
+            TextView cardViewDeleteTextView = new TextView(currentContext);
+            cardViewDeleteTextView.setMaxLines(1);
+            cardViewDeleteTextView.setText(currentCardModel.getCardDeleteText());
+            LayoutParams cardViewDeleteTextViewLayoutParams = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            cardViewDeleteTextView.setLayoutParams(cardViewDeleteTextViewLayoutParams);
+
+            LinearLayout cardViewDeleteLinearLayout = new LinearLayout(currentContext);
+            cardViewDeleteLinearLayout.setGravity(Gravity.CENTER);
+            LayoutParams cardViewDeleteLinearLayoutParams = new LayoutParams(size50Dp, ViewGroup.LayoutParams.WRAP_CONTENT);
+            cardViewDeleteLinearLayoutParams.setMargins(cardWidth+size25Dp,size10Dp,0,size10Dp);
+            cardViewDeleteLinearLayout.setLayoutParams(cardViewDeleteLinearLayoutParams);
+            cardViewDeleteLinearLayout.addView(cardViewDeleteImageView);
+            cardViewDeleteLinearLayout.addView(cardViewDeleteTextView);
+
+            int badgeMarginTop = 0;
+            if (totalCards >= 3) {
+                badgeMarginTop = -size25Dp-(size5Dp*3);
+            } else {
+                badgeMarginTop = -size25Dp-(size5Dp*totalCards);
+            }
+
+            TextView cardViewBadgeTextView = new TextView(currentContext);
+            LayoutParams cardViewBadgeLayoutParam = new LayoutParams(size25Dp,size25Dp);
+            cardViewBadgeTextView.setAlpha(0);
+            cardViewBadgeTextView.setBackgroundResource(R.drawable.background_card_badge);
+            cardViewBadgeTextView.setTextSize(16);
+            cardViewBadgeTextView.setText(String.valueOf(totalCards));
+            cardViewBadgeTextView.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL);
+            cardViewBadgeLayoutParam.setMargins(-size25Dp-size100Dp+size10Dp+size5Dp,badgeMarginTop,0,0);
+            cardViewBadgeTextView.setLayoutParams(cardViewBadgeLayoutParam);
+            cardViewBadgeTextView.setTextColor(Color.WHITE);
+
+            cardViewBadgeTextView.animate().alpha(1);
+
+            addView(cardViewNextLinearLayout);
+            addView(cardViewDeleteLinearLayout);
+            addView(cardViewBadgeTextView);
+
+            quantityTextView = cardViewBadgeTextView;
+            initialPositionXNextLayout = cardViewNextLinearLayout.getX();
+            initialPositionXDeleteLayout = cardViewDeleteLinearLayout.getX();
+        }
+
 
     }
 
@@ -329,13 +406,6 @@ public class CardLayout extends LinearLayout {
 
         // linear Layout with all views ( next, content and delete )
         LinearLayout cardViewLinearLayout = new LinearLayout(currentContext);
-
-        // Image view that appears in swipe right
-        ImageView cardViewNextImageView = new ImageView(currentContext);
-        cardViewNextImageView.setImageResource(R.drawable.icon_action_next);
-        LayoutParams cardViewNextLayoutParam = new LayoutParams(size50Dp,size50Dp);
-        cardViewNextLayoutParam.setMargins(-size50Dp,size10Dp,0,0);
-        cardViewNextImageView.setLayoutParams(cardViewNextLayoutParam);
 
         // Image view that appears in the card
         ImageView cardViewContentImageView = new ImageView(currentContext);
@@ -366,12 +436,6 @@ public class CardLayout extends LinearLayout {
         cardViewContentLinearLayout.setScaleX(scaleValue);
         cardViewContentLinearLayout.setScaleX(scaleValue);
 
-        ImageView cardViewDeleteImageView = new ImageView(currentContext);
-        LayoutParams cardViewDeleteLayoutParams = new LayoutParams(size50Dp,size50Dp);
-        cardViewDeleteLayoutParams.setMargins(size25Dp,size10Dp,0,size10Dp);
-        cardViewDeleteImageView.setLayoutParams(cardViewDeleteLayoutParams);
-        cardViewDeleteImageView.setImageResource(R.drawable.icon_action_delete);
-
         LayoutParams cardViewLinearLayoutParam = new LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.WRAP_CONTENT);
         // First Card
         if (firstCard) {
@@ -385,9 +449,7 @@ public class CardLayout extends LinearLayout {
         cardViewContentLinearLayout.addView(cardViewContentImageView);
         cardViewContentLinearLayout.addView(cardViewContentTextView);
 
-        cardViewLinearLayout.addView(cardViewNextImageView);
         cardViewLinearLayout.addView(cardViewContentLinearLayout);
-        cardViewLinearLayout.addView(cardViewDeleteImageView);
 
         cardViewLinearLayout.setId(currentCardId);
         currentCardId--;
@@ -414,13 +476,16 @@ public class CardLayout extends LinearLayout {
         removeAllViews();
         currentCardId = totalCards-1;
 
-        cardViewLayoutParam.setMargins(size10Dp,size10Dp,size10Dp,size10Dp);
+        //cardViewLayoutParam.setMargins(size10Dp,size10Dp,size10Dp,size10Dp);
         setGravity(Gravity.CENTER_VERTICAL);
+        setOrientation(HORIZONTAL);
         setLayoutParams(cardViewLayoutParam);
 
         if(totalCards <= 0) {
             setVisibility(View.GONE);
         } else {
+
+            currentCard = totalCards-1;
 
             // Linear Layout that contains the entire card
             LinearLayout cardLinearLayout = new LinearLayout(getContext());
@@ -446,23 +511,13 @@ public class CardLayout extends LinearLayout {
                 cardPosition++;
             }
 
-            TextView cardViewBadgeTextView = new TextView(context);
-            LayoutParams cardViewBadgeLayoutParam = new LayoutParams(size25Dp,size25Dp);
-            cardViewBadgeTextView.setBackgroundResource(R.drawable.background_card_badge);
-            cardViewBadgeTextView.setTextSize(16);
-            cardViewBadgeTextView.setText(String.valueOf(totalCards));
-            cardViewBadgeTextView.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL);
-            cardViewBadgeLayoutParam.setMargins(-size35Dp,-size25Dp-(size5Dp*numberOfDisplayedCards),0,0);
-            cardViewBadgeTextView.setLayoutParams(cardViewBadgeLayoutParam);
-            cardViewBadgeTextView.setTextColor(Color.WHITE);
-
             addView(cardLinearLayout);
-            addView(cardViewBadgeTextView);
-
-
-            currentCard = totalCards-1;
-            quantityTextView = cardViewBadgeTextView;
+            resetIcons();
             currentCardLinearLayout = cardLinearLayout;
+
+            initialPositionXContentLayout = cardLinearLayout.getChildAt(cardLinearLayout.getChildCount()-1).getX();
+            initialPositionXBadgeLayout = quantityTextView.getX();
+
 
         }
 
@@ -492,8 +547,8 @@ public class CardLayout extends LinearLayout {
         currentView = (LinearLayout) currentCardLinearLayout.getChildAt(currentCardLinearLayout.getChildCount()-1);
         currentCardId = currentView.getId();
 
-        ImageView nextImageView = (ImageView) currentView.getChildAt(0);
-        ImageView deleteImageView = (ImageView) currentView.getChildAt(2);
+        LinearLayout nextImageView = (LinearLayout) getChildAt(1);
+        LinearLayout deleteImageView = (LinearLayout) getChildAt(2);
 
         switch (event.getAction() & MotionEvent.ACTION_MASK) {
             case MotionEvent.ACTION_DOWN:
@@ -508,7 +563,7 @@ public class CardLayout extends LinearLayout {
             case MotionEvent.ACTION_MOVE:
                 moveDelta = posX - moveX;
                 int deltaBadge = posX - moveBadgeX;
-                int deltaNextImageView = posX - moveNextImageView;
+                int deltaNextImageView = posX - moveNextImageView - size50Dp;
                 int deltaDeleteImageView = posX - moveDeleteImageView;
 
                 nextImageView.setX(deltaNextImageView);
@@ -537,11 +592,10 @@ public class CardLayout extends LinearLayout {
 
                 } else if (moveDelta > 30 || moveDelta < -30) {
 
-                    moveX = -moveX;
-                    currentView.animate().translationX(moveX);
-                    nextImageView.animate().translationX(moveX);
-                    deleteImageView.animate().translationX(moveX);
-                    quantityTextView.animate().translationX(moveX);
+                    currentView.animate().translationX(initialPositionXContentLayout);
+                    nextImageView.animate().translationX(initialPositionXNextLayout);
+                    deleteImageView.animate().translationX(initialPositionXDeleteLayout);
+                    quantityTextView.animate().translationX(initialPositionXBadgeLayout);
 
                 } else if (iCardLayout != null) {
                     iCardLayout.onClick(currentCardModel);
@@ -549,8 +603,6 @@ public class CardLayout extends LinearLayout {
                 moveDelta = 0;
                 break;
         }
-
-
         return true;
     }
 
