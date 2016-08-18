@@ -44,7 +44,7 @@ public class CardLayout extends LinearLayout {
     private Context currentContext;
 
     private int moveX,moveBadgeX, moveNextImageView, moveDeleteImageView;
-    private int MIN_DISTANCE = 0, cardWidth, moveDelta=0, currentCard=0, totalCards=0, currentCardId =0;
+    private int MIN_DISTANCE = 0, cardWidth, moveDelta=0, currentCard=0, totalCards=0, currentCardId =0,numberOfDisplayedCards = -1;
     private CardModel currentCardModel;
     private ArrayList<CardModel> cardCollection = new ArrayList<CardModel>();
     private LinearLayout currentCardLinearLayout;
@@ -168,8 +168,10 @@ public class CardLayout extends LinearLayout {
         if (success) {
 
             totalCards = this.cardCollection.size();
-            currentCard = totalCards -1;
-
+            currentCard--;
+            if (currentCard < 0 ) {
+                currentCard = totalCards-1;
+            }
             resetBadgePosition();
             // Check if the cards were added
             if (currentCardLinearLayout == null) {
@@ -187,6 +189,10 @@ public class CardLayout extends LinearLayout {
         return success;
     }
 
+    public void setNumberOfDisplayedCards (int cardsToDisplay) {
+        this.numberOfDisplayedCards = cardsToDisplay;
+    }
+
     /**
      *
       */
@@ -198,20 +204,32 @@ public class CardLayout extends LinearLayout {
 
             // reset the current view ( will be replaced )
             currentView = null;
-
+            int cardsToShow = 0;
             View movedView = currentCardLinearLayout.findViewById(currentCardId);
+
+            int displayedCards = currentCardLinearLayout.getChildCount();
+
+            // get the card position
+            int cardPosition = currentCard - numberOfDisplayedCards;
+            if (cardPosition < 0 && numberOfDisplayedCards > totalCards) {
+                cardPosition = currentCard;
+
+            } else if (cardPosition < 0 ) {
+                cardPosition = totalCards + cardPosition;
+            }
 
             // Check if the old card was deleted
             if (movedView != null) {
 
-                currentCardLinearLayout.removeViewInLayout(movedView);
+                currentCardLinearLayout.removeView(movedView);
 
-                CardModel movedCardModel = cardCollection.get(currentCard);
+                CardModel movedCardModel = cardCollection.get(cardPosition);
 
-                LinearLayout movedCardView = newCardView(movedCardModel,totalCards,false);
+                LinearLayout movedCardView = newCardView(movedCardModel,displayedCards,false);
 
-                LayoutParams cardViewContentLinearLayoutParam = (LayoutParams) movedView.getLayoutParams();
-                cardViewContentLinearLayoutParam.setMargins(size10Dp,(totalCards-1)*size10Dp,size10Dp,0);
+                LayoutParams cardViewContentLinearLayoutParam = (LayoutParams) movedCardView.getLayoutParams();
+                cardViewContentLinearLayoutParam.setMargins(size10Dp,(displayedCards-1)*size10Dp,size10Dp,0);
+
                 currentCardLinearLayout.addView(movedCardView,0,cardViewContentLinearLayoutParam);
 
                 currentCard--;
@@ -220,23 +238,42 @@ public class CardLayout extends LinearLayout {
                     currentCard = totalCards-1;
                 }
 
+                cardsToShow = numberOfDisplayedCards >= totalCards ? totalCards : numberOfDisplayedCards;
+
+            } else {
+                // increment the card that was removed
+                cardPosition++;
+                if (displayedCards < numberOfDisplayedCards && numberOfDisplayedCards <= totalCards) {
+
+                    CardModel nextCardModel = cardCollection.get(cardPosition);
+
+                    LinearLayout nextCardView = newCardView(nextCardModel,totalCards-1,false);
+
+                    LayoutParams nextViewContentLinearLayoutParam = (LayoutParams) nextCardView.getLayoutParams();
+                    nextViewContentLinearLayoutParam.setMargins(size10Dp,(totalCards-1)*size10Dp,size10Dp,0);
+                    currentCardLinearLayout.addView(nextCardView,0,nextViewContentLinearLayoutParam);
+                    cardsToShow = numberOfDisplayedCards;
+                } else {
+                    cardsToShow = totalCards;
+                }
             }
 
-            for (int i = 0; i < totalCards; i++) {
+            for (int i = 0; i < cardsToShow; i++) {
 
                 View nextCardView = currentCardLinearLayout.getChildAt(i);
 
                 LayoutParams nextCardLayoutParams = (LayoutParams) nextCardView.getLayoutParams();
                 // First Card
                 if (i == 0) {
-                    nextCardLayoutParams.setMargins(size10Dp,(totalCards-1)*(size10Dp+size5Dp),size10Dp,0);
+                    nextCardLayoutParams.setMargins(size10Dp,(cardsToShow-1)*(size10Dp+size5Dp),size10Dp,0);
                 } else {
                     nextCardLayoutParams.setMargins(size10Dp,-size80Dp-size10Dp,size10Dp,0);
                 }
                 nextCardView.setLayoutParams(nextCardLayoutParams);
 
-                nextCardView.animate().scaleX(nextCardView.getScaleX() + 0.02f).scaleY(nextCardView.getScaleY() + 0.02f);
-                nextCardView.invalidate();
+                float scaleValue = 1f-((cardsToShow-1-i)/50f);
+
+                nextCardView.animate().scaleX(scaleValue).scaleY(scaleValue);
             }
 
             currentCardModel = this.cardCollection.get(currentCard);
@@ -312,7 +349,6 @@ public class CardLayout extends LinearLayout {
         LayoutParams cardViewContentLinearLayoutParam = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,size80Dp);
         cardViewContentLinearLayout.setLayoutParams(cardViewContentLinearLayoutParam);
 
-
         float scaleValue = 1f-((numTotal)/50f);
 
         cardViewContentLinearLayout.setScaleX(scaleValue);
@@ -380,12 +416,22 @@ public class CardLayout extends LinearLayout {
             cardLinearLayout.setLayoutParams(cardLinearLayoutLayoutParam);
             cardLinearLayout.setOrientation(VERTICAL);
 
-            for (int i = 0; i< totalCards ; i++) {
+            int cardsToShow = (numberOfDisplayedCards < 0 || numberOfDisplayedCards > totalCards) ? totalCards : numberOfDisplayedCards;
 
-                CardModel card = this.cardCollection.get(i);
+            int startPosition = 0;
+            int cardPosition = 0;
 
-                cardLinearLayout.addView(newCardView(this.cardCollection.get(i),totalCards-1-i,i==0));
+            if (totalCards > cardsToShow) {
+                startPosition = totalCards - cardsToShow;
+            }
 
+
+            for (; startPosition < totalCards ; startPosition++) {
+
+                CardModel card = this.cardCollection.get(startPosition);
+
+                cardLinearLayout.addView(newCardView(this.cardCollection.get(startPosition),cardsToShow-1-cardPosition,cardPosition==0));
+                cardPosition++;
             }
 
             TextView cardViewBadgeTextView = new TextView(context);
@@ -394,7 +440,7 @@ public class CardLayout extends LinearLayout {
             cardViewBadgeTextView.setTextSize(16);
             cardViewBadgeTextView.setText(String.valueOf(totalCards));
             cardViewBadgeTextView.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL);
-            cardViewBadgeLayoutParam.setMargins(-size35Dp,-size25Dp-(size5Dp*totalCards),0,0);
+            cardViewBadgeLayoutParam.setMargins(-size35Dp,-size25Dp-(size5Dp*numberOfDisplayedCards),0,0);
             cardViewBadgeTextView.setLayoutParams(cardViewBadgeLayoutParam);
             cardViewBadgeTextView.setTextColor(Color.WHITE);
 
@@ -479,11 +525,11 @@ public class CardLayout extends LinearLayout {
 
                 } else if (moveDelta > 30 || moveDelta < -30) {
 
-                    moveDelta = -moveDelta;
-                    currentView.animate().translationX(moveDelta);
-                    nextImageView.animate().translationX(moveDelta);
-                    deleteImageView.animate().translationX(moveDelta);
-                    quantityTextView.animate().translationX(moveDelta);
+                    moveX = -moveX;
+                    currentView.animate().translationX(moveX);
+                    nextImageView.animate().translationX(moveX);
+                    deleteImageView.animate().translationX(moveX);
+                    quantityTextView.animate().translationX(moveX);
 
                 } else if (iCardLayout != null) {
                     iCardLayout.onClick(currentCardModel);

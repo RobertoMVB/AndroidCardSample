@@ -31,6 +31,8 @@ public class MainActivity extends Activity implements OnClickListener {
 
         ArrayList<CardModel> myCollection = new ArrayList<CardModel>();
 
+        myCardLayout.setNumberOfDisplayedCards(3);
+
         myCardLayout.setContractor(new ICardLayout() {
             @Override
             public void swipeLeft(CardModel card) {
@@ -50,10 +52,12 @@ public class MainActivity extends Activity implements OnClickListener {
         });
 
         Button addCardButton = (Button) findViewById(R.id.addCard);
-        Button addCarListdButton = (Button) findViewById(R.id.removeCard);
+        Button add3CardsListdButton = (Button) findViewById(R.id.add3Cards);
+        Button add6CardsListdButton = (Button) findViewById(R.id.add6Cards);
 
         addCardButton.setOnClickListener(this);
-        addCarListdButton.setOnClickListener(this);
+        add3CardsListdButton.setOnClickListener(this);
+        add6CardsListdButton.setOnClickListener(this);
 
         //myCardLayout.SetListeners(myClickListener,myTouchEvent);
 
@@ -62,36 +66,63 @@ public class MainActivity extends Activity implements OnClickListener {
     @Override
     public void onClick(View view) {
 
+        ArrayList<CardModel> cards =  new ArrayList<CardModel>();
+        CardModel card = new CardModel();
+
         switch (view.getId()) {
             case R.id.addCard:
 
-                CardModel cardSample = new CardModel();
-                cardSample.setCardType(cardCount);
-                cardSample.setCardURL("http://");
+                card.setCardType(cardCount);
+                card.setCardURL("http://");
 
                 // sample to add random image
                 int randomNumber = (int) (Math.random() * (100 - 0)) + 0;
 
-                cardSample.setCardText("Este é o meu cartão : " + cardCount + " com o id aleatório : " + randomNumber);
+                card.setCardText("Este é o meu cartão : " + cardCount + " com o id aleatório : " + randomNumber);
 
                 if (randomNumber > 66) {
-                    cardSample.setImageResourceId(R.drawable.icon_action_alert1);
+                    card.setImageResourceId(R.drawable.icon_action_alert1);
                 } else if (randomNumber > 33) {
-                    cardSample.setImageResourceId(R.drawable.icon_action_alert2);
+                    card.setImageResourceId(R.drawable.icon_action_alert2);
                 } else {
-                    cardSample.setImageResourceId(R.drawable.icon_action_alert3);
+                    card.setImageResourceId(R.drawable.icon_action_alert3);
                 }
 
-                myCardLayout.addCard(cardSample);
+                myCardLayout.addCard(card);
                 cardCount++;
                 break;
-            case R.id.removeCard:
-
-                ArrayList<CardModel> cards =  new ArrayList<CardModel>();
+            case R.id.add3Cards:
 
                 for (int i = 0 ; i < 3 ; i ++) {
 
-                    CardModel card = new CardModel();
+                    card = new CardModel();
+
+                    card.setCardType(cardCount);
+                    card.setCardURL("http://");
+
+                    // sample to add random image
+                    int randomN = (int) (Math.random() * (100 - 0)) + 0;
+
+                    card.setCardText("Este é o meu cartão : " + cardCount + " com o id aleatório : " + randomN);
+
+                    if (randomN > 66) {
+                        card.setImageResourceId(R.drawable.icon_action_alert1);
+                    } else if (randomN > 33) {
+                        card.setImageResourceId(R.drawable.icon_action_alert2);
+                    } else {
+                        card.setImageResourceId(R.drawable.icon_action_alert3);
+                    }
+                    cards.add(card);
+                    cardCount++;
+                }
+
+                myCardLayout.addCards(cards);
+                break;
+            case R.id.add6Cards:
+                for (int i = 0 ; i < 6 ; i ++) {
+
+                    card = new CardModel();
+
                     card.setCardType(cardCount);
                     card.setCardURL("http://");
 
