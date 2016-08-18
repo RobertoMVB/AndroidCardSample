@@ -226,7 +226,7 @@ public class CardLayout extends LinearLayout {
                 CardModel movedCardModel = cardCollection.get(cardPosition);
 
                 LinearLayout movedCardView = newCardView(movedCardModel,displayedCards,false);
-
+                movedCardView.setAlpha(0);
                 LayoutParams cardViewContentLinearLayoutParam = (LayoutParams) movedCardView.getLayoutParams();
                 cardViewContentLinearLayoutParam.setMargins(size10Dp,(displayedCards-1)*size10Dp,size10Dp,0);
 
@@ -253,7 +253,7 @@ public class CardLayout extends LinearLayout {
                     CardModel nextCardModel = cardCollection.get(cardPosition);
 
                     LinearLayout nextCardView = newCardView(nextCardModel,totalCards-1,false);
-
+                    nextCardView.setAlpha(0);
                     LayoutParams nextViewContentLinearLayoutParam = (LayoutParams) nextCardView.getLayoutParams();
                     nextViewContentLinearLayoutParam.setMargins(size10Dp,(totalCards-1)*size10Dp,size10Dp,0);
                     currentCardLinearLayout.addView(nextCardView,0,nextViewContentLinearLayoutParam);
@@ -278,11 +278,11 @@ public class CardLayout extends LinearLayout {
 
                 LinearLayout contentCardView = (LinearLayout) nextCardView.getChildAt(1);
 
-                Log.v("CardLayout","Child : " + i + " SCALE X " + contentCardView.getScaleX() + " SCALE Y " + contentCardView.getScaleY());
-
                 float scaleValue = 1f - ((cardsToShow-1-i)/50f);
 
-                Log.v("CardLayout","Child : " + i + " scaleValue " + scaleValue);
+                if (i == 0) {
+                    nextCardView.animate().alpha(1f);
+                }
 
                 contentCardView.animate().scaleX(scaleValue).scaleY(scaleValue);
 
