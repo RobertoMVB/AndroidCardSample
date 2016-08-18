@@ -243,6 +243,11 @@ public class CardLayout extends LinearLayout {
             } else {
                 // increment the card that was removed
                 cardPosition++;
+
+                if (cardPosition >= totalCards) {
+                    cardPosition = totalCards - 1;
+                }
+
                 if (displayedCards < numberOfDisplayedCards && numberOfDisplayedCards <= totalCards) {
 
                     CardModel nextCardModel = cardCollection.get(cardPosition);
@@ -260,7 +265,7 @@ public class CardLayout extends LinearLayout {
 
             for (int i = 0; i < cardsToShow; i++) {
 
-                View nextCardView = currentCardLinearLayout.getChildAt(i);
+                LinearLayout nextCardView = (LinearLayout) currentCardLinearLayout.getChildAt(i);
 
                 LayoutParams nextCardLayoutParams = (LayoutParams) nextCardView.getLayoutParams();
                 // First Card
@@ -271,9 +276,16 @@ public class CardLayout extends LinearLayout {
                 }
                 nextCardView.setLayoutParams(nextCardLayoutParams);
 
-                float scaleValue = 1f-((cardsToShow-1-i)/50f);
+                LinearLayout contentCardView = (LinearLayout) nextCardView.getChildAt(1);
 
-                nextCardView.animate().scaleX(scaleValue).scaleY(scaleValue);
+                Log.v("CardLayout","Child : " + i + " SCALE X " + contentCardView.getScaleX() + " SCALE Y " + contentCardView.getScaleY());
+
+                float scaleValue = 1f - ((cardsToShow-1-i)/50f);
+
+                Log.v("CardLayout","Child : " + i + " scaleValue " + scaleValue);
+
+                contentCardView.animate().scaleX(scaleValue).scaleY(scaleValue);
+
             }
 
             currentCardModel = this.cardCollection.get(currentCard);
