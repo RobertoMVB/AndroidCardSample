@@ -312,12 +312,13 @@ public class CardLayout extends LinearLayout {
             // Image view that appears in swipe right
             ImageView cardViewNextImageView = new ImageView(currentContext);
             cardViewNextImageView.setImageResource(currentCardModel.getImageNextId());
-            LayoutParams cardViewNextLayoutParam = new LayoutParams(size50Dp,size50Dp);
+            LayoutParams cardViewNextLayoutParam = new LayoutParams(size40dp,size40dp);
             cardViewNextImageView.setLayoutParams(cardViewNextLayoutParam);
 
             // Text view that appears in the swipe right
             TextView cardViewNextTextView = new TextView(currentContext);
             cardViewNextTextView.setMaxLines(1);
+            cardViewNextTextView.setTextSize(16);
             cardViewNextTextView.setText(currentCardModel.getCardNextText());
             LayoutParams cardViewNextTextViewLayoutParams = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
             cardViewNextTextView.setLayoutParams(cardViewNextTextViewLayoutParams);
@@ -325,6 +326,7 @@ public class CardLayout extends LinearLayout {
             // Linear layout that appears in the swipe right
             LinearLayout cardViewNextLinearLayout = new LinearLayout(currentContext);
             cardViewNextLinearLayout.setGravity(Gravity.CENTER);
+            cardViewNextLinearLayout.setOrientation(VERTICAL);
             LayoutParams cardViewNextLinearLayoutParams = new LayoutParams(size50Dp, ViewGroup.LayoutParams.WRAP_CONTENT);
             cardViewNextLinearLayoutParams.setMargins(-size50Dp-cardWidth,size10Dp,0,size10Dp);
             cardViewNextLinearLayout.setLayoutParams(cardViewNextLinearLayoutParams);
@@ -332,19 +334,21 @@ public class CardLayout extends LinearLayout {
             cardViewNextLinearLayout.addView(cardViewNextTextView);
 
             ImageView cardViewDeleteImageView = new ImageView(currentContext);
-            LayoutParams cardViewDeleteLayoutParams = new LayoutParams(size50Dp,size50Dp);
+            LayoutParams cardViewDeleteLayoutParams = new LayoutParams(size40dp,size40dp);
             cardViewDeleteLayoutParams.setMargins(0,size10Dp,0,size10Dp);
             cardViewDeleteImageView.setLayoutParams(cardViewDeleteLayoutParams);
             cardViewDeleteImageView.setImageResource(currentCardModel.getImageDeleteId());
 
             TextView cardViewDeleteTextView = new TextView(currentContext);
             cardViewDeleteTextView.setMaxLines(1);
+            cardViewDeleteTextView.setTextSize(16);
             cardViewDeleteTextView.setText(currentCardModel.getCardDeleteText());
             LayoutParams cardViewDeleteTextViewLayoutParams = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
             cardViewDeleteTextView.setLayoutParams(cardViewDeleteTextViewLayoutParams);
 
             LinearLayout cardViewDeleteLinearLayout = new LinearLayout(currentContext);
             cardViewDeleteLinearLayout.setGravity(Gravity.CENTER);
+            cardViewDeleteLinearLayout.setOrientation(VERTICAL);
             LayoutParams cardViewDeleteLinearLayoutParams = new LayoutParams(size50Dp, ViewGroup.LayoutParams.WRAP_CONTENT);
             cardViewDeleteLinearLayoutParams.setMargins(cardWidth+size25Dp,size10Dp,0,size10Dp);
             cardViewDeleteLinearLayout.setLayoutParams(cardViewDeleteLinearLayoutParams);
